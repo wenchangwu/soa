@@ -4,4 +4,53 @@
 
 <web-app>
   <display-name>Archetype Created Web Application</display-name>
+  
+  <context-param>  
+        <param-name>contextConfigLocation</param-name>  
+        <param-value>classpath:spring/ctx_main.xml</param-value>  
+    </context-param>  
+    <context-param>
+		<param-name>webAppRootKey</param-name>
+		<param-value>soa.root</param-value>
+	</context-param>
+      <context-param>
+		<param-name>log4jRefreshInterval</param-name>
+		<param-value>3000</param-value>
+	</context-param>
+	<context-param>
+		<param-name>log4jConfigLocation</param-name>
+		<param-value>WEB-INF/conf/log4j.xml</param-value>
+	</context-param>
+	<listener>
+		<listener-class>org.springframework.web.util.Log4jConfigListener
+		</listener-class>
+	</listener>
+	<listener>
+		<listener-class>org.springframework.web.util.WebAppRootListener
+		</listener-class>
+	</listener>
+	
+   
+    <listener>  
+        <listener-class>  
+            org.springframework.web.context.ContextLoaderListener  
+        </listener-class>  
+    </listener>  
+    
+    
+    <!-- cxf配置文件开始 -->
+    <servlet>
+		<servlet-name>CXFServlet</servlet-name>
+		<display-name>CXF Servlet</display-name>
+		<servlet-class>
+			org.apache.cxf.transport.servlet.CXFServlet
+		</servlet-class>
+		<load-on-startup>0</load-on-startup>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>CXFServlet</servlet-name>
+		<url-pattern>/cxfService/*</url-pattern>
+	</servlet-mapping>
+	 <!-- cxf配置文件结束 -->
 </web-app>

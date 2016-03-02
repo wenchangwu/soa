@@ -2,7 +2,10 @@ package com.soa.jaxws;
 
 import javax.jws.WebService;
 
-@WebService
+import org.springframework.stereotype.Service;
+
+@WebService(endpointInterface = "com.soa.jaxws.HelloService")
+@Service(value="helloService")
 public class HelloServiceImpl implements HelloService {
 
 	@Override
