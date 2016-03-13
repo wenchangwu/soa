@@ -5,7 +5,9 @@
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 
-    <context:component-scan base-package="com.soa.jaxws" />
+    <context:component-scan base-package="com" />
 
 	<import resource="classpath:spring/cxf_ws_service.xml" />
+	<import resource="classpath:spring/mq/ctx_mq_consumer.xml" />
+	<import resource="classpath:spring/mq/ctx_mq_publisher.xml" />
 </beans>

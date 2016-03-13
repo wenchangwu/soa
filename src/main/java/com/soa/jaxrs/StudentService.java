@@ -6,8 +6,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
-import org.apache.cxf.jaxrs.ext.PATCH;
-
 @Path(value="/student/{id}")
 @Produces("application/xml")
 public interface StudentService {
