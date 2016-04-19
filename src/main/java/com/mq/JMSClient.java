@@ -28,6 +28,7 @@ public class JMSClient {
 		boolean useTransaction = false;
 		
 		try{
+			//test
 			Context ctx = new InitialLdapContext();
 			connectionFactory =
 			(ConnectionFactory) ctx.lookup(connectionFactoryName);
