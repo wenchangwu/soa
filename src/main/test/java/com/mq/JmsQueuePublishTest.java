@@ -1,4 +1,4 @@
-package com.mq;
+package java.com.mq;
 
 import javax.annotation.Resource;
 import javax.jms.JMSException;
