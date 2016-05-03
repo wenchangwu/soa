@@ -57,27 +57,28 @@ public class Worker implements Watcher{
 	};
 	
 	
-	StatCallback statusUpdateCallback=new StatCallback(){
-
-		@Override
-		public void processResult(int rc, String path, Object ctx, Stat stat) {
-			switch(Code.get(rc)){
-			case CONNECTIONLOSS:
-			updateStatus((String)ctx);
-			return;
-			}
-			
-		}
-	};
-
 		private synchronized void updateStatus(String status) {
 			if(status==this.status){
 					zk.setData("/workers/" + serverId, status.getBytes(), -1,
 					statusUpdateCallback, status);
 			}
 		};
+		
+		StatCallback statusUpdateCallback=new StatCallback(){
+
+			@Override
+			public void processResult(int rc, String path, Object ctx, Stat stat) {
+				switch(Code.get(rc)){
+				case CONNECTIONLOSS:
+				updateStatus((String)ctx);
+				System.out.println("*******************************"+(String)ctx);
+				return;
+				}
+				
+			}
+		};
 	
-	public void setStatus(String status){
+	public  void setStatus(String status){
 		this.status=status;
 		updateStatus(status);
 	}

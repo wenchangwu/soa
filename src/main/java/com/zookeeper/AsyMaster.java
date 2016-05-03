@@ -8,6 +8,8 @@ import org.apache.activemq.AsyncCallback;
 import org.apache.zookeeper.AsyncCallback.DataCallback;
 import org.apache.zookeeper.AsyncCallback.StringCallback;
 import org.apache.zookeeper.KeeperException.Code;
+import org.apache.zookeeper.KeeperException.NoNodeException;
+import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -55,76 +57,95 @@ public class AsyMaster implements Watcher {
 		}
 	}
 
-
 	void runForMaster() {
-		zk.create("/master", serverId.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL,
-				masterCreateCallback, null);
-	}
+				zk.create("/master", serverId.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL,asynCallback,null);
+		}
 
+	
+	StringCallback asynCallback=new StringCallback() {
+		
+		@Override
+		public void processResult(int rc, String path, Object ctx, String name) {
+			switch(Code.get(rc)){
+			case CONNECTIONLOSS:
+				checkMaster();
+				return;
+			case OK:
+				System.out.println("askjdfklajsdfklajsdfljas");
+				isLeader=true;
+				break;
+				default:
+				isLeader=false;
+			}
+		System.out.println("I'm " + (isLeader ? "" : "not ") +
+		"the leader");
+		}
+	};
+
+	static void  checkMaster() {
+		zk.getData("/master", false, (DataCallback) masterCreateCallback, null);
+	}
+	
+	DataCallback masterCheckCallback=new DataCallback(){
+		@Override
+		public void processResult(int rc, String path, Object ctx, byte[] data, Stat stat) {
+			switch(Code.get(rc)){
+			case CONNECTIONLOSS:
+				checkMaster();
+				return;
+			case NONODE:
+				runForMaster();
+				return;
+			}
+			
+		}
+		
+	};
+	
+	
 	byte[] getData(String path, boolean watch, Stat stat) {
 		return new byte[2];
-	}
-
-	static boolean checkMaster() {
-		while (true) {
-			Stat stat = new Stat();
-			byte data[];
-			try {
-				data = zk.getData("/master", false, stat);
-				isLeader = new String(data).equals(serverId);
-			} catch (KeeperException | InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-		}
 	}
 
 	void create(String path, byte[] data, List<ACL> acl, CreateMode createMode, StringCallback cb, Object ctx) {
 
 	}
 
-	static StringCallback masterCreateCallback=new StringCallback(){
+	static StringCallback masterCreateCallback = new StringCallback() {
 
-	@Override public void processResult(int rc,String path,Object ctx,String name){switch(Code.get(rc)){case CONNECTIONLOSS:checkMaster();return;case OK:isLeader=true;break;default:isLeader=false;}System.out.println("I'm "+(isLeader?"":"not ")+"the leader");}
+		@Override
+		public void processResult(int rc, String path, Object ctx, String name) {
+			switch (Code.get(rc)) {
+			case CONNECTIONLOSS:
+				checkMaster();
+				return;
+			case OK:
+				isLeader = true;
+				break;
+			default:
+				isLeader = false;
+			}
+			System.out.println("I'm " + (isLeader ? "" : "not ") + "the leader");
+		}
 
 	};
 
-	DataCallback masterCheckCallback = new DataCallback() {
-		public void processResult(int rc, String path, Object ctx, byte[] data,Stat stat) {
-		switch(Code.get(rc)) {
-		case CONNECTIONLOSS:
-		checkMaster();
-		return;
-		case NONODE:
-		runForMaster();
-		return;
-		}
-		}
-	 };
-	
-		
-		
-	 void processResult(int rc, String path, Object ctx, String name){
-		 
-	 }
-	 
-	 public void bootStrap(){
-		 createParent("/workers",new byte[0]);
-		 createParent("/assign",new byte[0]);
-		 createParent("/tasks",new byte[0]);
-		 createParent("/status",new byte[0]);
-	 }
-	 
-	 void createParent(String path,byte[] data){
-		 zk.create(path,
-				 data,
-				 Ids.OPEN_ACL_UNSAFE,
-				 CreateMode.PERSISTENT,
-				 createParentCallback,
-				 data);
-	 }
-	 
+
+	void processResult(int rc, String path, Object ctx, String name) {
+
+	}
+
+	public void bootStrap() {
+		createParent("/workers", new byte[0]);
+		createParent("/assign", new byte[0]);
+		createParent("/tasks", new byte[0]);
+		createParent("/status", new byte[0]);
+	}
+
+	void createParent(String path, byte[] data) {
+		zk.create(path, data, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT, createParentCallback, data);
+	}
+
 	StringCallback createParentCallback = new StringCallback() {
 
 		@Override
@@ -143,19 +164,19 @@ public class AsyMaster implements Watcher {
 		}
 
 	};
-	
+
 	public static void main(String[] args) throws Exception {
-		AsyMaster m=new AsyMaster("127.0.0.1:2181");
+		AsyMaster m = new AsyMaster("127.0.0.1:2181");
 		m.startZk();
 		m.runForMaster();
-		
-		if(isLeader){
+
+		if (isLeader) {
 			System.out.println("I am the leader");
-			//wait for a bit
+			// wait for a bit
 			Thread.sleep(60000);
-		}else{
+		} else {
 			System.out.println("someone else is the leader");
 		}
 		m.stopZk();
 	}
-	}
+}
