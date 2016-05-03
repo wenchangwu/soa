@@ -4,14 +4,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.activemq.AsyncCallback;
 import org.apache.zookeeper.AsyncCallback.DataCallback;
+import org.apache.zookeeper.AsyncCallback.StatCallback;
 import org.apache.zookeeper.AsyncCallback.StringCallback;
-import org.apache.zookeeper.KeeperException.Code;
-import org.apache.zookeeper.KeeperException.NoNodeException;
-import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs;
@@ -20,8 +17,6 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
 
-import kafka.log.Log;
-
 public class AsyMaster implements Watcher {
 
 	static ZooKeeper zk;
@@ -29,6 +24,8 @@ public class AsyMaster implements Watcher {
 	static Random random = new Random();
 	static boolean isLeader = false;
 	static String serverId = Integer.toHexString(random.nextInt());
+	enum MasterStates {RUNNING, ELECTED, NOTELECTED};
+	private volatile MasterStates state = MasterStates.RUNNING;
 
 	@Override
 	public void process(WatchedEvent arg0) {
@@ -71,7 +68,6 @@ public class AsyMaster implements Watcher {
 				checkMaster();
 				return;
 			case OK:
-				System.out.println("askjdfklajsdfklajsdfljas");
 				isLeader=true;
 				break;
 				default:
@@ -82,6 +78,45 @@ public class AsyMaster implements Watcher {
 		}
 	};
 
+	
+	void masterExists(){
+		zk.exists("/master", masterExistsWatch, masterExistsCallback, null);
+	}
+	
+	Watcher masterExistsWatch=new Watcher(){
+
+		@Override
+		public void process(WatchedEvent arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	};
+	
+	
+	StatCallback masterExistsCallback=new StatCallback(){
+
+		@Override
+		public void processResult(int rc, String arg1, Object arg2, Stat stat) {
+			switch (Code.get(rc)) {
+			case CONNECTIONLOSS:
+			masterExists();
+			break;
+			case OK:
+			if(stat == null) {
+			state= MasterStates.RUNNING;
+			runForMaster();
+			}
+			break;
+			default:
+			checkMaster();
+			break;
+			}
+			
+		}
+		
+	};
+	
 	static void  checkMaster() {
 		zk.getData("/master", false, (DataCallback) masterCreateCallback, null);
 	}
