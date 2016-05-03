@@ -45,7 +45,7 @@ public class Client implements Watcher {
 	public static void main(String args[]) throws Exception {
 		Client c = new Client("127.0.0.1:2181");
 		c.startZK();
-		String name = c.queueCommand(args[1]);
+		String name = c.queueCommand("list");
 		System.out.println("Created " + name);
 	}
 

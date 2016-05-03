@@ -25,7 +25,7 @@ public class AdminClient implements Watcher{
 	void listState() throws KeeperException,InterruptedException{
 		try{
 			Stat stat=new Stat();
-			byte[] masterData=zk.getData("/Master", false, stat);
+			byte[] masterData=zk.getData("/master", false, stat);
 			Date startDate=new Date(stat.getCtime());
 			System.out.println("Master:"+new String(masterData)+"since:"+startDate);
 		}catch(NoNodeException | InterruptedException e){

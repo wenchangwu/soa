@@ -32,7 +32,7 @@ public class Worker implements Watcher{
 	}
 	
 	void register(){
-		zk.create("/workers/worker-"+serverId, "Idle".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL,createWorkerCallback,null);
+		zk.create("/workers/worker-"+serverId, "Idle".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT,createWorkerCallback,null);
 	}
 	
 	StringCallback createWorkerCallback=new StringCallback(){
